@@ -33,3 +33,9 @@ show dbs
 use airbnb
 db.ratings.update({}, {$unset: {datasetid: 1, recordid:1}}, {multi:true});
 ```
+
+## Dependencies
+* mongo-java-driver (3.6.3)
+* bson (3.6.3)
+* mongodb-driver-async (3.6.3)
+* mongodb-driver-core (3.6.3)

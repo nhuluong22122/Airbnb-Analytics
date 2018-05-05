@@ -1,9 +1,14 @@
 import com.mongodb.Block;
+import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 
+import javax.print.Doc;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -12,9 +17,15 @@ import java.util.Arrays;
  */
 public class MongoDB {
     private MongoCollection<Document> coll;
+    Block<Document> printBlock; // for testing purposes
 
     public MongoDB(String host, int port, String dbname, String collname) {
         coll = connect(host, port,dbname, collname);
+        printBlock = new Block<Document>() {
+            public void apply(final Document document) {
+                System.out.println(document.toJson());
+            }
+        };
     }
 
     /**
@@ -34,22 +45,39 @@ public class MongoDB {
     }
 
     /**
+     *
+     */
+    public void findOldestHost(){
+        //db.ratings.find({}, {"_id":0, "fields.host_since": 1, "fields.city":1}).sort({"fields.host_since":1}).limit(20)
+        FindIterable<Document> iter = coll.find()
+                .limit(20)
+                .sort(Sorts.ascending("fields.host_since"))
+                .projection(Projections.fields(
+                        Projections.include("fields.listing_url","fields.host_name", "fields.host_since", "fields.city"),
+                        Projections.excludeId()));
+
+        for (Document doc : iter) {
+            Document s = (Document) doc.get("fields");
+            System.out.println("Listing url: " + s.get("listing_url") + " | Name: " + s.get("host_name") + " | Host Since: " + s.get("host_since") + " | City: " + s.get("city"));
+        }
+    }
+    /**
      * Get the average price by country
      */
     public void averagePriceByCountry() {
-        Block<Document> printBlock = new Block<Document>() {
-            public void apply(final Document document) {
-                System.out.println(document.toJson());
-            }
-        };
-        coll.aggregate(Arrays.asList(
+        //db.ratings.aggregate([{$group: {_id: "fields.country_code", price: {$avg:"$fields.price"}}},
+        // {$project: {_id:0, "Country":"$_id", "Average Price Per Day": {$avg: "$price"}}}]);
+        AggregateIterable<Document> iter = coll.aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$fields.country_code")
                         .append("price", new Document("$avg", "$fields.price"))),
                 new Document("$project", new Document("_id", 0)
                         .append("Country", "$_id")
                         .append("Average Price Per Day", "$price")
-                ))).forEach(printBlock);
+                )));
 
+        for (Document doc : iter) {
+            System.out.println("Country: " + doc.get("Country") + " | Average Price Per Day: " + doc.get("Average Price Per Day"));
+        }
     }
 
     /**

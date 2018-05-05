@@ -23,13 +23,16 @@ public class Main {
             int input = in.nextInt();
             switch (input){
                 case 1: { //Find the average price of Airbnb listings group by country
+                    System.out.println("YOU SELECTED: AVERAGE PRICE OF AIRBNB LISTINGS");
                     db.averagePriceByCountry();
                     break;
                 }
                 case 2: { //Find the listings and city with the most Airbnb reviews
                     break;
                 }
-                case 3: { //Find the city and country that has the earliest host
+                case 3: { //Find the oldest listings
+                    System.out.println("YOU SELECTED: OLDEST LISTINGS");
+                    db.findOldestHost();
                     break;
                 }
                 case 4: { // Rank countries based on Airbnb ratings
@@ -68,6 +71,9 @@ public class Main {
                 case 15: { //Find top 10 closest airbnb listings to a specific location that accommodates a number of users
                     break;
                 }
+                case 0: {
+                    System.exit(0);
+                }
                 default:{
                     System.out.println("Please select option from 1-15");
                     displayOptions();
@@ -78,7 +84,7 @@ public class Main {
     }
 
     public static void displayOptions(){
-        System.out.println("Please choose one of the following options: ");
+        System.out.println("Please choose one of the following options or 0 to EXIT:");
 
         System.out.println("============General Statistic============"); //Does not require further input
         System.out.println("[1] Find the average price of Airbnb listings group by country"); //Nhu
@@ -100,7 +106,7 @@ public class Main {
         System.out.println("[14] Find top 10 closest airbnb listings to a specific zipcode that has specified room type"); //Nhu
         System.out.println("[15] Find top 10 closest airbnb listings to a specific location that accommodates a number of users"); //Nhu
 
-        System.out.println("Your Selection: ");
+        System.out.print("Your Selection: ");
     }
 
 }
