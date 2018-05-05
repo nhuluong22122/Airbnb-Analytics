@@ -3,6 +3,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
@@ -43,28 +44,10 @@ public class MongoDB {
         System.out.println("Connected To Host: " + host + " Port: " + port + " DB: " + dbName + " Collection: " + collectionName);
         return coll;
     }
-
-    /**
-     *
-     */
-    public void findOldestHost(){
-        //db.ratings.find({}, {"_id":0, "fields.host_since": 1, "fields.city":1}).sort({"fields.host_since":1}).limit(20)
-        FindIterable<Document> iter = coll.find()
-                .limit(20)
-                .sort(Sorts.ascending("fields.host_since"))
-                .projection(Projections.fields(
-                        Projections.include("fields.listing_url","fields.host_name", "fields.host_since", "fields.city"),
-                        Projections.excludeId()));
-
-        for (Document doc : iter) {
-            Document s = (Document) doc.get("fields");
-            System.out.println("Listing url: " + s.get("listing_url") + " | Name: " + s.get("host_name") + " | Host Since: " + s.get("host_since") + " | City: " + s.get("city"));
-        }
-    }
     /**
      * Get the average price by country
      */
-    public void averagePriceByCountry() {
+    public void findAveragePriceByCountry() {
         //db.ratings.aggregate([{$group: {_id: "fields.country_code", price: {$avg:"$fields.price"}}},
         // {$project: {_id:0, "Country":"$_id", "Average Price Per Day": {$avg: "$price"}}}]);
         AggregateIterable<Document> iter = coll.aggregate(Arrays.asList(
@@ -80,6 +63,45 @@ public class MongoDB {
         }
     }
 
+
+    /**
+     * Find oldest listings
+     */
+    public void findOldestListings(){
+        //db.ratings.find({}, {"_id":0, "fields.host_since": 1, "fields.city":1}).sort({"fields.host_since":1}).limit(20)
+        FindIterable<Document> iter = coll.find()
+                .limit(20)
+                .sort(Sorts.ascending("fields.host_since"))
+                .projection(Projections.fields(
+                        Projections.include("fields.listing_url","fields.host_name", "fields.host_since", "fields.city"),
+                        Projections.excludeId()));
+
+        for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Listing url: " + doc.get("listing_url")
+                    + " | Name: " + doc.get("host_name")
+                    + " | Host Since: " + doc.get("host_since")
+                    + " | City: " + doc.get("city"));
+        }
+    }
+
+    public void findHighestReviewPerMonth(){
+        FindIterable<Document> iter = coll.find()
+                .limit(10)
+                .sort(Sorts.descending("fields.reviews_per_month"))
+                .projection(Projections.fields(
+                        Projections.include("fields.reviews_per_month","fields.number_of_reviews","fields.listing_url", "fields.city", "fields.country"),
+                        Projections.excludeId()));
+
+        for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Reviews Per Month: " + doc.get("reviews_per_month")
+                            + " | Total Reviews: " + doc.get("number_of_reviews")
+                            + " | Listing Url: " + doc.get("listing_url")
+                            + " | Location: " + doc.get("city") + ", " + doc.get("country"));
+        }
+
+    }
     /**
      * Not being used, just for immediate report
      */
@@ -91,7 +113,7 @@ public class MongoDB {
         Document update = new Document();
         update.append("$inc", setData);
         coll.updateMany(query, update);
-        averagePriceByCountry();
+        findAveragePriceByCountry();
     }
 
 }

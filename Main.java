@@ -23,16 +23,16 @@ public class Main {
             int input = in.nextInt();
             switch (input){
                 case 1: { //Find the average price of Airbnb listings group by country
-                    System.out.println("YOU SELECTED: AVERAGE PRICE OF AIRBNB LISTINGS");
-                    db.averagePriceByCountry();
+                    System.out.println("YOU SELECTED: Average price per month group by country");
+                    db.findAveragePriceByCountry();
                     break;
                 }
                 case 2: { //Find the listings and city with the most Airbnb reviews
                     break;
                 }
-                case 3: { //Find the oldest listings
-                    System.out.println("YOU SELECTED: OLDEST LISTINGS");
-                    db.findOldestHost();
+                case 3: { //Find the oldest listing
+                    System.out.println("YOU SELECTED: Top 20 oldest listings");
+                    db.findOldestListings();
                     break;
                 }
                 case 4: { // Rank countries based on Airbnb ratings
@@ -42,6 +42,8 @@ public class Main {
                     break;
                 }
                 case 6: { //Find top 10 listings that has the highest reviews per month
+                    System.out.println("YOU SELECT: Top 10 listings that has the highest reviews per month");
+                    db.findHighestReviewPerMonth();
                     break;
                 }
                 case 7: { //Show the number of hosts and super hosts in different countries in 2017
@@ -89,7 +91,7 @@ public class Main {
         System.out.println("============General Statistic============"); //Does not require further input
         System.out.println("[1] Find the average price of Airbnb listings group by country"); //Nhu
         System.out.println("[2] Find the listings and city with the most Airbnb reviews");
-        System.out.println("[3] Find cities and countries that has the earliest host"); //Nhu
+        System.out.println("[3] Find top 20 the oldest listings"); //Nhu
         System.out.println("[4] Rank countries based on Airbnb ratings");
         System.out.println("[5] Find top 5 cities with the most listings");
         System.out.println("[6] Find top 10 listings that has the highest reviews per month"); //Nhu
