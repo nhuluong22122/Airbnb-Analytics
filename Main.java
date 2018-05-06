@@ -1,16 +1,3 @@
-import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
-import com.mongodb.MongoClient;
-import com.mongodb.WriteConcern;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
-import com.mongodb.client.result.UpdateResult;
-import org.bson.Document;
-
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -65,12 +52,16 @@ public class Main {
                     break;
                 }
                 case 13: { //Find top 10 closest airbnb listings to a specific zipcode
+                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode");
+                    db.findListingsBasedOnZipcode("New York");
                     break;
                 }
                 case 14: { //Find top 10 closest airbnb listings to a specific zipcode that has specified room type
+                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode that has specified room type");
                     break;
                 }
                 case 15: { //Find top 10 closest airbnb listings to a specific location that accommodates a number of users
+                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode that accommodates a number of users");
                     break;
                 }
                 case 0: {

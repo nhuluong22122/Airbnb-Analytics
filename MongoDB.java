@@ -1,16 +1,25 @@
 import com.mongodb.Block;
-import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.client.*;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.geojson.Point;
+import com.mongodb.client.model.geojson.Position;
+import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonValue;
 import org.bson.Document;
 
-import javax.print.Doc;
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * MongoDB Query logic
@@ -86,8 +95,9 @@ public class MongoDB {
     }
 
     public void findHighestReviewPerMonth(){
+
         FindIterable<Document> iter = coll.find()
-                .limit(10)
+                .limit(20)
                 .sort(Sorts.descending("fields.reviews_per_month"))
                 .projection(Projections.fields(
                         Projections.include("fields.reviews_per_month","fields.number_of_reviews","fields.listing_url", "fields.city", "fields.country"),
@@ -99,6 +109,75 @@ public class MongoDB {
                             + " | Total Reviews: " + doc.get("number_of_reviews")
                             + " | Listing Url: " + doc.get("listing_url")
                             + " | Location: " + doc.get("city") + ", " + doc.get("country"));
+        }
+    }
+    /**
+     * Find listings based on address
+     * @param: zipcode zipcode
+     */
+    public void findListingsBasedOnZipcode(String zipcode) {
+        try {
+            //db.ratings.find({geometry:{ $near:{$geometry: { type: "Point", coordinates: [ -73.9667, 40.78 ] },$minDistance: 1000,$maxDistance: 5000}}}, {"fields.city": 1} )
+            String API_KEY = "AIzaSyAzC9QtvwTkFeHkLPK55VG_VIXFmDj4rrc";
+            String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/geocode/json?";
+
+            StringBuilder sb = new StringBuilder(PLACES_API_BASE);
+            sb.append("&address=" + URLEncoder.encode(zipcode, "utf8"));
+            sb.append("&key=" + API_KEY);
+
+            URL url = new URL(sb.toString());
+            System.out.println(sb.toString());
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+            StringBuilder jsonResults = new StringBuilder();
+            int read;
+            char[] buff = new char[1024];
+            while ((read = br.read(buff)) != -1) {
+                jsonResults.append(buff, 0, read);
+            }
+
+            BsonDocument doc = BsonDocument.parse(jsonResults.toString());
+            List<BsonValue> a = doc.get("results").asArray().getValues();
+            BsonDouble lat;
+            BsonDouble lng;
+            for (BsonValue v : a){
+                lat = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lat").asDouble();
+                lng = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lng").asDouble();
+                System.out.println(lat + " " + lng);
+
+                Point refPoint = new Point(new Position( lng.doubleValue(), lat.doubleValue()));
+
+                FindIterable<Document> iter = coll.find(Filters.near("geometry", refPoint , 5001.0,1000.0))
+                        .limit(20)
+                        .projection(Projections.fields(
+                                Projections.include("fields.listing_url","fields.name","fields.city"),
+                                Projections.excludeId()));
+
+//                DistinctIterable<String> iter = coll.distinct("fields.listing_url",String.class).filter(Filters.near("geometry", refPoint , 2001.0,1000.0));
+                for (Document document : iter) {
+                    document = (Document) document.get("fields");
+                    System.out.println("Listing URL: " + document.get("listing_url")
+                                        + " | Name: " + document.get("name")
+                                        + " | City: " + document.get("city"));
+                }
+
+            }
+
+
+
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
