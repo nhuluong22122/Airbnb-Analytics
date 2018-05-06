@@ -15,6 +15,8 @@ public class Main {
                     break;
                 }
                 case 2: { //Find the listings and city with the most Airbnb reviews
+                    System.out.println("YOU SELECTED: Find the listings and city with the most Airbnb reviews");
+                    db.findMostAirbnbReviews();
                     break;
                 }
                 case 3: { //Find the oldest listing
@@ -23,6 +25,8 @@ public class Main {
                     break;
                 }
                 case 4: { // Rank countries based on Airbnb ratings
+                    System.out.println("YOU SELECTED: Rank countries based on Airbnb ratings");
+                    db.rankCountries();
                     break;
                 }
                 case 5: { //Find top 5 cities with the most listings
@@ -52,12 +56,39 @@ public class Main {
                     break;
                 }
                 case 13: { //Find top 10 closest airbnb listings to a specific zipcode
-                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode");
-                    db.findListingsBasedOnZipcode("New York");
+                    System.out.println("YOU SELECT: Find closest 10 airbnb listings to a specific location/address");
+                    System.out.println("ENTER LOCATION: ");
+                    String line;
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            db.findListingsBasedOnZipcode(line, 0, 0);
+                            break;
+                        }
+                    }
                     break;
                 }
                 case 14: { //Find top 10 closest airbnb listings to a specific zipcode that has specified room type
-                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode that has specified room type");
+                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings based on location/address within a range");
+                    System.out.println("ENTER LOCATION: ");
+                    String line = "";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("Enter Max & Min Range in km: ");
+                            if(in.hasNextLine()){
+                                String[] range = in.nextLine().split(" ");
+                                if(!line.equals("")){
+                                    db.findListingsBasedOnZipcode(line, Double.parseDouble(range[0]), Double.parseDouble(range[1]));
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
                 case 15: { //Find top 10 closest airbnb listings to a specific location that accommodates a number of users
@@ -83,7 +114,7 @@ public class Main {
         System.out.println("[1] Find the average price of Airbnb listings group by country"); //Nhu
         System.out.println("[2] Find the listings and city with the most Airbnb reviews");
         System.out.println("[3] Find top 20 the oldest listings"); //Nhu
-        System.out.println("[4] Rank countries based on Airbnb ratings");
+        System.out.println("[4] Rank countries based on Airbnb ratings"); //Nhu
         System.out.println("[5] Find top 5 cities with the most listings");
         System.out.println("[6] Find top 10 listings that has the highest reviews per month"); //Nhu
         System.out.println("[7] Show the number of hosts and super hosts in different countries in 2017\n"); //Nhu

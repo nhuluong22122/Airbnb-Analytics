@@ -1,6 +1,9 @@
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
-import com.mongodb.client.*;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
@@ -88,12 +91,37 @@ public class MongoDB {
         for (Document doc : iter) {
             doc = (Document) doc.get("fields");
             System.out.println("Listing url: " + doc.get("listing_url")
-                    + " | Name: " + doc.get("host_name")
-                    + " | Host Since: " + doc.get("host_since")
-                    + " | City: " + doc.get("city"));
+                    + "\n | Name: " + doc.get("host_name")
+                    + "\n | Host Since: " + doc.get("host_since")
+                    + "\n | City: " + doc.get("city"));
         }
     }
 
+    /**
+     * Find the listings and cities with the most Airbnb reviews
+     */
+    public void findMostAirbnbReviews(){
+        //db.ratings.find({},{"fields.listing_url":1, "fields.name":1}).limit(100).sort({"fields.number_of_reviews": 1});
+        FindIterable<Document> iter = coll.find()
+                .limit(10)
+                .sort(Sorts.descending("fields.number_of_reviews"))
+                .projection(Projections.fields(
+                        Projections.include("fields.listing_url","fields.name","fields.number_of_reviews", "fields.city", "fields.country"),
+                        Projections.excludeId()));
+
+        for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Listing url: " + doc.get("listing_url")
+                    + "\n | Name: " + doc.get("name")
+                    + "\n | Number of Reviews: " + doc.get("number_of_reviews")
+                    + "\n | Location: " + doc.get("city") + " " + doc.get("country"));
+        }
+
+    }
+
+    /**
+     * Find statistic about the top Highest Reviews Per Month
+     */
     public void findHighestReviewPerMonth(){
 
         FindIterable<Document> iter = coll.find()
@@ -106,16 +134,44 @@ public class MongoDB {
         for (Document doc : iter) {
             doc = (Document) doc.get("fields");
             System.out.println("Reviews Per Month: " + doc.get("reviews_per_month")
-                            + " | Total Reviews: " + doc.get("number_of_reviews")
-                            + " | Listing Url: " + doc.get("listing_url")
-                            + " | Location: " + doc.get("city") + ", " + doc.get("country"));
+                            + "\n | Total Reviews: " + doc.get("number_of_reviews")
+                            + "\n | Listing Url: " + doc.get("listing_url")
+                            + "\n | Location: " + doc.get("city") + ", " + doc.get("country"));
+        }
+    }
+
+    /**
+     * Rank countries based on reviews
+     */
+    public void rankCountries(){
+        //db.ratings.aggregate([{$group: {_id: "$fields.country", count: {$sum: 1},  amount: { $avg: { $multiply :
+        // [ '$fields.review_scores_value', '$fields.review_scores_accuracy','$fields.review_scores_cleanliness',
+        // '$fields.review_scores_location','$fields.review_scores_checkin','$fields.review_scores_communication']}}}},
+        // {$project: {_id:0, "Country":"$_id", "Average Review": "$amount"}},{$sort:{“Average Review“:-1}}])
+        List<String> srt_array = Arrays.asList("$fields.review_scores_value",
+                "$fields.review_scores_accuracy","$fields.review_scores_cleanliness",
+                "$fields.review_scores_location", "$fields.review_scores_checkin","$fields.review_scores_communication");
+        AggregateIterable<Document> iter = coll.aggregate(Arrays.asList(
+                new Document("$group", new Document("_id", "$fields.country")
+                        .append("count", new Document("$sum", 1))
+                        .append("average", new Document("$avg", new Document("$multiply",srt_array)))),
+                new Document("$project", new Document("_id", 0)
+                        .append("Country", "$_id")
+                        .append("Number of Listings", "$count")
+                        .append("Average Review", "$average")),
+                new Document("$sort", new Document("Average Review", -1))));
+
+        for (Document doc : iter) {
+            System.out.println("Country: " + doc.get("Country")
+                    + "\n | Number of Listings: " + doc.get("Number of Listings")
+                    + "\n | Average Review: " + doc.get("Average Review"));
         }
     }
     /**
      * Find listings based on address
      * @param: zipcode zipcode
      */
-    public void findListingsBasedOnZipcode(String zipcode) {
+    public void findListingsBasedOnZipcode(String zipcode, double maxRange, double minRange) {
         try {
             //db.ratings.find({geometry:{ $near:{$geometry: { type: "Point", coordinates: [ -73.9667, 40.78 ] },$minDistance: 1000,$maxDistance: 5000}}}, {"fields.city": 1} )
             String API_KEY = "AIzaSyAzC9QtvwTkFeHkLPK55VG_VIXFmDj4rrc";
@@ -147,33 +203,43 @@ public class MongoDB {
             List<BsonValue> a = doc.get("results").asArray().getValues();
             BsonDouble lat;
             BsonDouble lng;
-            for (BsonValue v : a){
-                lat = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lat").asDouble();
-                lng = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lng").asDouble();
-                System.out.println(lat + " " + lng);
+            BsonValue v = a.get(0);
+            lat = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lat").asDouble();
+            lng = v.asDocument().get("geometry").asDocument().get("location").asDocument().get("lng").asDouble();
+            System.out.println(lat + " " + lng);
 
-                Point refPoint = new Point(new Position( lng.doubleValue(), lat.doubleValue()));
-
-                FindIterable<Document> iter = coll.find(Filters.near("geometry", refPoint , 5001.0,1000.0))
+            Point refPoint = new Point(new Position( lng.doubleValue(), lat.doubleValue()));
+            if(maxRange > 0){ // for query 13
+                FindIterable<Document> iter = coll.find(Filters.near("geometry", refPoint , maxRange , minRange))
                         .limit(20)
                         .projection(Projections.fields(
                                 Projections.include("fields.listing_url","fields.name","fields.city"),
                                 Projections.excludeId()));
-
-//                DistinctIterable<String> iter = coll.distinct("fields.listing_url",String.class).filter(Filters.near("geometry", refPoint , 2001.0,1000.0));
                 for (Document document : iter) {
                     document = (Document) document.get("fields");
                     System.out.println("Listing URL: " + document.get("listing_url")
-                                        + " | Name: " + document.get("name")
-                                        + " | City: " + document.get("city"));
+                            + "\n | Name: " + document.get("name")
+                            + "\n | City: " + document.get("city"));
                 }
-
             }
-
-
-
-
-
+            else { // for query 14
+                FindIterable<Document> iter = coll.find(Filters.near("geometry", refPoint , 100.0,0.0))
+                        .limit(20)
+                        .sort(Sorts.ascending("geometry"))
+                        .projection(Projections.fields(
+                                Projections.include("geometry","fields.listing_url","fields.name","fields.number_of_reviews","fields.price"),
+                                Projections.excludeId()));
+                for (Document document : iter) {
+                    Document d2 = (Document) document.get("geometry");
+                    String[] coor = d2.get("coordinates").toString().replace("[","").replace("]","").split(",");
+                    double gap = distance(lat.doubleValue(), Double.parseDouble(coor[1]), lng.doubleValue() ,Double.parseDouble(coor[0]));
+                    document = (Document) document.get("fields");
+                    System.out.println("Listing URL: " + document.get("listing_url")
+                            + "\n | Distance in Miles: " + (gap * 0.621) + " miles"
+                            + "\n | Name: " + document.get("name")
+                            + "\n | Price Per Night: " + document.get("price"));
+                }
+            }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -181,6 +247,33 @@ public class MongoDB {
         }
 
     }
+
+    /**
+     * Calculate distance between two points in latitude and longitude
+     * @param lat1 1st latitude
+     * @param lat2 2nd latitude
+     * @param lon1 1st longtitude
+     * @param lon2 2nd longtitude
+     * @return distance between two points
+     */
+    public static double distance(double lat1, double lat2, double lon1,
+                                  double lon2) {
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        distance = Math.pow(distance, 2);
+
+        return Math.sqrt(distance);
+    }
+
     /**
      * Not being used, just for immediate report
      */
@@ -202,3 +295,4 @@ public class MongoDB {
 //                        "$fields.country_code", new BsonField("Average Price Per Day",
 //                                new BsonDocument("$avg", new BsonString("$fields.price")))))
 //        ).forEach(printBlock);
+//                DistinctIterable<String> iter = coll.distinct("fields.listing_url",String.class).filter(Filters.near("geometry", refPoint , 2001.0,1000.0));
