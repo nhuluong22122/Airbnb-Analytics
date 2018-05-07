@@ -30,6 +30,8 @@ public class Main {
                     break;
                 }
                 case 5: { //Find top 5 cities with the most listings
+                    System.out.println("YOU SELECTED: Find top 5 cities with the most listings");
+                    db.findMostListings();
                     break;
                 }
                 case 6: { //Find top 10 listings that has the highest reviews per month
@@ -38,6 +40,8 @@ public class Main {
                     break;
                 }
                 case 7: { //Show the number of hosts and super hosts in different countries in 2017
+                    System.out.println("YOU SELECT: Find the number of hosts and super hosts in different countries in 2017");
+                    db.findHosts();
                     break;
                 }
                 case 8: { //Find the most popular and highly-rated Airbnb listing based on location
@@ -115,7 +119,7 @@ public class Main {
         System.out.println("[2] Find the listings and city with the most Airbnb reviews");
         System.out.println("[3] Find top 20 the oldest listings"); //Nhu
         System.out.println("[4] Rank countries based on Airbnb ratings"); //Nhu
-        System.out.println("[5] Find top 5 cities with the most listings");
+        System.out.println("[5] Find top 10 cities with the most listings");
         System.out.println("[6] Find top 10 listings that has the highest reviews per month"); //Nhu
         System.out.println("[7] Show the number of hosts and super hosts in different countries in 2017\n"); //Nhu
 

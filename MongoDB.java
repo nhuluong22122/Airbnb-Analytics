@@ -60,7 +60,7 @@ public class MongoDB {
      * Get the average price by country
      */
     public void findAveragePriceByCountry() {
-        //db.ratings.aggregate([{$group: {_id: "fields.country_code", price: {$avg:"$fields.price"}}},
+        //db.ratings.aggregate([{$group: {_id: "$fields.country_code", price: {$avg:"$fields.price"}}},
         // {$project: {_id:0, "Country":"$_id", "Average Price Per Day": {$avg: "$price"}}}]);
         AggregateIterable<Document> iter = coll.aggregate(Arrays.asList(
                 new Document("$group", new Document("_id", "$fields.country_code")
@@ -166,6 +166,36 @@ public class MongoDB {
                     + "\n | Number of Listings: " + doc.get("Number of Listings")
                     + "\n | Average Review: " + doc.get("Average Review"));
         }
+    }
+
+    /**
+     * Find the top 10 cities with the most listings
+     */
+    public void findMostListings() {
+        //db.ratings.aggregate([{$group: {_id: "$fields.city", totalcount: {$sum:"$fields.host_listings_count"}}},
+        // {$project: {_id:0, "City":"$_id", "Total Count":"$totalcount"}},{$sort:{"Total Count":-1 }}]);
+        AggregateIterable<Document> iter = coll.aggregate(Arrays.asList(
+                new Document("$group", new Document("_id", "$fields.city")
+                        .append("count", new Document("$sum", "$fields.host_listings_count"))),
+                new Document("$project", new Document("_id", 0)
+                        .append("City", "$_id")
+                        .append("Number of Listing", "$count")),
+                new Document("$sort", new Document("Number of Listing", -1)),
+                new Document("$limit", 10)));
+
+        for (Document doc : iter) {
+            System.out.println("City: " + doc.get("City")
+                    + "\n | Number of Listings: " + doc.get("Number of Listing"));
+        }
+    }
+
+    /**
+     * Find the number of hosts and super hosts in different countries in 2017
+     */
+    public void findHosts(){
+        //db.ratings.aggregate([{$group: {_id: "$fields.country", hosts: {$sum:"$fields.host"},
+        // superhosts: { $cond: ["fields.host_is_superhost",1,0]}},
+        // {$project: {_id:0, "Country":"$_id", "Hosts":"$hosts", "Superhosts":"$superhosts"}},{$sort:{"Host":-1,"Superhosts":-1}}]);
     }
     /**
      * Find listings based on address
