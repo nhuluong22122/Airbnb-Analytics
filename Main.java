@@ -163,7 +163,7 @@ public class Main {
                     while(in.hasNextLine()){
                         line = in.nextLine();
                         if(!line.equals("")){
-                            db.findListingsBasedOnZipcode(line, 0, 0);
+                            db.findListingsBasedOnLocation(line);
                             break;
                         }
                     }
@@ -182,7 +182,7 @@ public class Main {
                             if(in.hasNextLine()){
                                 String[] range = in.nextLine().split(" ");
                                 if(!line.equals("")){
-                                    db.findListingsBasedOnZipcode(line, Double.parseDouble(range[0]), Double.parseDouble(range[1]));
+                                    db.findListingsWithinRange(line, Double.parseDouble(range[0]), Double.parseDouble(range[1]));
                                     break;
                                 }
                             }
@@ -191,7 +191,24 @@ public class Main {
                     break;
                 }
                 case 15: { //Find top 10 closest airbnb listings to a specific location that accommodates a number of users
-                    System.out.println("YOU SELECT: Find top 10 closest airbnb listings to a specific zipcode that accommodates a number of users");
+                    System.out.println("YOU SELECT: Find top 10 airbnb listings to a specific zipcode that has a certain amenities");
+                    System.out.println("ENTER LOCATION: ");
+                    String line = "";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("INCLUDE(1): ");
+                            if(in.hasNextLine()){
+                                String item = in.nextLine();
+                                if(!line.equals("")){
+                                    db.findListingsWithAmenities(line,item);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
                 case 0: {
@@ -227,7 +244,7 @@ public class Main {
         System.out.println("[12] Find top 10 places to stay in a specific city and under a specific price"); //Sinjin
         System.out.println("[13] Find top 10 closest airbnb listings to a specific zipcode"); //Nhu
         System.out.println("[14] Find top 10 closest airbnb listings to a specific zipcode that has specified room type"); //Nhu
-        System.out.println("[15] Find top 10 closest airbnb listings to a specific location that accommodates a number of users"); //Nhu
+        System.out.println("[15] Find top 10 closest airbnb listings to a specific zipcode that has a certain amenities"); //Nhu
 
         System.out.print("Your Selection: ");
     }
