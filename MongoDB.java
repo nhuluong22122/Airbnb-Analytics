@@ -9,6 +9,8 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Position;
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Projections.*;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonValue;
@@ -246,6 +248,80 @@ public class MongoDB {
             e.printStackTrace();
         }
 
+    }
+    /**
+     * Find Most popular and highly rated based on location
+     * @param: City city name
+     * @param Country country name
+     */
+    
+    public void findMostPopularandHighlyRatedBasedonLocation(String City, String Country)
+    {
+    	//
+    	FindIterable<Document> iter= coll.find(and(eq("fields.city",City),eq("fields.country",Country))).sort(Sorts.descending("fields.number_of_reviews")).projection(fields(include("fields.listing_url","fields.city","fields.country","fields.review_scores_rating","fields.number_of_reviews"),excludeId())).limit(10);
+    	 for (Document doc : iter) {
+             doc = (Document) doc.get("fields");
+             System.out.println("Total Reviews: " + doc.get("number_of_reviews") + "\n Review Score: "+doc.get("review_scores_rating") 
+                             + "\n | Listing Url: " + doc.get("listing_url")
+                             + "\n | Location: " + doc.get("city") + ", " + doc.get("country"));
+         }
+    }
+    
+    /**
+     * Find Listings based on property type
+     * @param: property property type
+     */
+    
+    public void findListingSpecificProperty(String property)
+    {
+    	//
+    	FindIterable<Document> iter= coll.find(eq("fields.property_type",property)).projection(fields(include("fields.listing_url","fields.property_type"),excludeId())).limit(100);
+    	 for (Document doc : iter) {
+             doc = (Document) doc.get("fields");
+             System.out.println("Listing Url: " + doc.get("listing_url") + "\n Property Type: "+doc.get("property_type"));
+         }
+    }
+    /**
+     * Find Listings based on how long a person can stay
+     * @param: city city name
+     * @param: duration how long a person can stay
+     */
+    public void findListingAccommodatesDuration(String City,int Duration)
+    {
+    	FindIterable<Document> iter= coll.find(and(eq("fields.city",City),gte("fields.maximum_nights",Duration))).sort(Sorts.ascending("fields.maximum_nights")).projection(fields(include("fields.listing_url","fields.maximum_nights","fields.city"),excludeId())).limit(100);
+    	for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Listing Url: " + doc.get("listing_url") + "\n City: "+doc.get("city")+"\n Duration: "+doc.get("maximum_nights"));
+        }
+    }
+    
+    /**
+     * Find Listings based on how many people are allowed per listing
+     * @param: city city name
+     * @param: Accommodates how many people
+     */
+    
+    public void findListingSpecificAccommodations(String City,int Accommodates)
+    {
+    	FindIterable<Document> iter= coll.find(and(eq("fields.city",City),gte("fields.accommodates",Accommodates))).sort(Sorts.ascending("fields.accommodates")).projection(fields(include("fields.listing_url","fields.host_name","fields.city","fields.host_url", "fields.accommodates"),excludeId()));
+    	for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Listing Url: " + doc.get("listing_url") + "\n City: "+doc.get("city")+ "\n People Allowed: "+doc.get("accommodates")+"\n Host Name: "+doc.get("host_name")+"\n Host URL: "+doc.get("host_url"));
+        }
+    }
+    /**
+     * Find top 10 listings based on with a specifed price sorted by review score
+     * @param: city city name
+     * @param: Accommodates how many people
+     */
+    
+    public void findListingInCityBasedOnPrice(String City, int price)
+    {
+    	FindIterable<Document> iter= coll.find(and(eq("fields.city",City),lte("fields.price",price))).sort(Sorts.descending("fields.review_scores_rating")).projection(fields(include("fields.listing_url","fields.city","fields.price","fields.review_scores_rating"),excludeId())).limit(10);
+    	for (Document doc : iter) {
+            doc = (Document) doc.get("fields");
+            System.out.println("Listing Url: " + doc.get("listing_url") + "\n City: "+doc.get("city")+ "\n Price: $"+doc.get("price")+"\n Review Score: "+doc.get("review_scores_rating"));
+        }
     }
 
     /**

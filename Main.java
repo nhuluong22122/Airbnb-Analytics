@@ -41,18 +41,113 @@ public class Main {
                     break;
                 }
                 case 8: { //Find the most popular and highly-rated Airbnb listing based on location
+                	System.out.println("YOU SELECT: Find the most popular and highly-rated Airbnb listing based on location");
+                	System.out.println("ENTER City");
+                	  String line = "";
+                	  String line1="";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("Enter Country");
+                            
+                            if(in.hasNextLine()){
+                            	line1=in.nextLine();
+                                if(!line.equals("")){
+                                   db.findMostPopularandHighlyRatedBasedonLocation(line, line1);;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                  
+                	//db.findMostPopularandHighlyRatedBasedonLocation("Nashville","United States");
                     break;
                 }
-                case 9: { //Find listings that has a specific check-in or check-out time in a city
-                    break;
+                case 9: { //Find listings that has a specific property_type (House, Townhouse, etc… )
+                	  System.out.println("YOU SELECT: Find listings that has a specific property type");
+                      System.out.println("ENTER PROPERTY TYPE (Options: House,Apartment, Bed & Breakfast): ");
+                      String line;
+                      int max = 0;
+                      int min = 0;
+                      while(in.hasNextLine()){
+                          line = in.nextLine();
+                          if(!line.equals("")){
+                              db.findListingSpecificProperty(line);
+                              break;
+                          }
+                      }
+                      break;
+                   
                 }
                 case 10: { //Find listings that accommodates a specified duration in a city
+                	System.out.println("YOU SELECT: Find listings that accommodates a specified duration in a city");
+                	System.out.println("ENTER City");
+                	  String line = "";
+                	  String line1="";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("Enter how many nights");
+                            
+                            if(in.hasNextLine()){
+                            	line1=in.nextLine();
+                                if(!line.equals("")){
+                                   db.findListingAccommodatesDuration(line, Integer.parseInt(line1));
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
-                case 11: { //Find a specific host that satisfy user's demand for transit, house-rule, interaction
+                case 11: { //Find a specific host that satisfy user's specific number of accommodations
+                	System.out.println("YOU SELECT: Find a specific host that satisfy user's specific number of accommodations");
+                	System.out.println("ENTER City");
+                	  String line = "";
+                	  String line1="";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("Enter how many People");
+                            
+                            if(in.hasNextLine()){
+                            	line1=in.nextLine();
+                                if(!line.equals("")){
+                                   db.findListingSpecificAccommodations(line, Integer.parseInt(line1));
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
-                case 12: { //Find top 10 places to stay in a specific city and under a specific price
+                case 12: { //Find top 10 places to stay in a specific city and under a specific price based on review score
+                	System.out.println("YOU SELECT: Find top 10 places to stay in a specific city and under a specific price based on review score");
+                	System.out.println("ENTER City");
+                	  String line = "";
+                	  String line1="";
+                    int max = 0;
+                    int min = 0;
+                    while(in.hasNextLine()){
+                        line = in.nextLine();
+                        if(!line.equals("")){
+                            System.out.println("Enter how much money");
+                            
+                            if(in.hasNextLine()){
+                            	line1=in.nextLine();
+                                if(!line.equals("")){
+                                   db.findListingInCityBasedOnPrice(line, Integer.parseInt(line1));
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     break;
                 }
                 case 13: { //Find top 10 closest airbnb listings to a specific zipcode
@@ -134,4 +229,3 @@ public class Main {
     }
 
 }
-
